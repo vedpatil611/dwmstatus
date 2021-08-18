@@ -212,39 +212,15 @@ gettemperature(char *base, char *sensor)
 
 char* getMemory() 
 {
-	FILE* fp = fopen("/proc/meminfo", "r");
+	FILE* fp = popen("free -h | grep Mem", "r");
 
-	char label[32];
-	char unit[4];
-	int value;
+	char temp[8];
+	char used[8];
+	fscanf(fp, "%s %s %s", temp, temp, used);
 
-	long long int total = 0, used = 0;
+	pclose(fp);
 
-	int left = 4;
-
-	while(left != 0) 
-	{
-		fscanf(fp, "%s %d %s", label, &value, unit);
-
-		if (strncmp(label, "MemTotal:", 32) == 0) {
-            total = value;
-            used += value;
-            --left;
-        } else if (strncmp(label, "MemFree:", 32) == 0) {
-            used -= value;
-            --left;
-        } else if (strncmp(label, "Buffers:", 32) == 0) {
-            used -= value;
-            --left;
-        } else if (strncmp(label, "Cached:", 32) == 0) {
-            used -= value;
-            --left;
-		}
-	}
-
-	fclose(fp);
-
-	return smprintf("%.1f/%.1f", (float) used / (1024 * 1024), (float) (total - used) / (1024 * 1024));
+	return smprintf("%s", used);
 }
 
 int main(void)
