@@ -223,12 +223,23 @@ char* getMemory()
 	return smprintf("%s", used);
 }
 
+char* getVolume()
+{
+	FILE* fp = popen("pactl get-sink-volume 0", "r");
+	char temp[16];
+	char volume[8];
+	fscanf(fp, "%s %s %s %s %s", temp, temp, temp, temp, volume);
+	pclose(fp);
+	return smprintf("%s", volume);
+}
+
 int main(void)
 {
 	char *status;
 	char *bat1;
 	char *tmbln;
 	char *mem;
+	char *volume;
 
 	if (!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "dwmstatus: cannot open display.\n");
@@ -239,13 +250,15 @@ int main(void)
 		bat1 = getBattery("/sys/class/power_supply/BAT1");
 		tmbln = mktimes("%a %d %b %H:%M %Y", tz);
 		mem = getMemory();
+		volume = getVolume();
 
-		status = smprintf("M:%s | B:%s | T:%s", mem, bat1, tmbln);
+		status = smprintf("V: %s | M:%s | B:%s | T:%s", volume, mem, bat1, tmbln);
 		setstatus(status);
 
 		free(bat1);
 		free(tmbln);
 		free(mem);
+		free(volume);
 		free(status);
 	}
 
