@@ -17,6 +17,8 @@
 
 #include <X11/Xlib.h>
 
+#define LOW_BATTERY_WARNING_THRESHOLD 20
+
 char *tzutc = "UTC";
 char *tz = "Asia/Kolkata";
 
@@ -168,16 +170,27 @@ char* getBattery(char* base)
 	char* co;
 	char status;
 	int cap;
-	
+	static u_int8_t flags = 0;
+
 	co = readfile(base, "capacity");
 	sscanf(co ,"%d", &cap);
 	free(co);
-	
+
 	co = readfile(base, "status");
 	if (!strncmp(co, "Discharging", 11)) {
 		status = '-';
+		if(cap <= LOW_BATTERY_WARNING_THRESHOLD && (flags & 1) == 0)
+		{
+			flags |= 1;
+			char* lowBatterySyntax = "notify-send -u critical \"Low Battery\"";
+			system(lowBatterySyntax);
+		}
 	} else if(!strncmp(co, "Charging", 8)) {
 		status = '+';
+		if(flags & 1 && cap > LOW_BATTERY_WARNING_THRESHOLD)
+		{
+			flags = 0;
+		}
 	} else {
 		status = '?';
 	}
