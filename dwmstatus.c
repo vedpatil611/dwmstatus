@@ -257,7 +257,7 @@ int main(void)
 		return 1;
 	}
 
-	for (;;sleep(5)) {
+	for (;;sleep(1)) {
 		bat1 = getBattery("/sys/class/power_supply/BAT1");
 		tmbln = mktimes("%a %d %b %H:%M %Y", tz);
 		mem = getMemory();
