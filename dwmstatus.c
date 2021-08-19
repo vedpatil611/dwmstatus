@@ -233,6 +233,16 @@ char* getVolume()
 	return smprintf("%s", volume);
 }
 
+char* getDiskSpace()
+{
+	FILE* fp = popen("df -H | grep sdb3", "r");
+	char temp[16];
+	char avail[8];
+	fscanf(fp, "%s %s %s %s", temp, temp, temp, avail);
+	pclose(fp);
+	return smprintf("%s", avail);
+}
+
 int main(void)
 {
 	char *status;
@@ -240,6 +250,7 @@ int main(void)
 	char *tmbln;
 	char *mem;
 	char *volume;
+	char *disk;
 
 	if (!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "dwmstatus: cannot open display.\n");
@@ -251,14 +262,16 @@ int main(void)
 		tmbln = mktimes("%a %d %b %H:%M %Y", tz);
 		mem = getMemory();
 		volume = getVolume();
+		disk = getDiskSpace();
 
-		status = smprintf("V: %s | M:%s | B:%s | T:%s", volume, mem, bat1, tmbln);
+		status = smprintf("V: %s | M:%s | D:%s | B:%s | T:%s", volume, mem, disk, bat1, tmbln);
 		setstatus(status);
 
 		free(bat1);
 		free(tmbln);
 		free(mem);
 		free(volume);
+		free(disk);
 		free(status);
 	}
 
